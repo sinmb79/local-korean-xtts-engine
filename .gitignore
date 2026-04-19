@@ -1,0 +1,10 @@
+node_modules/
+dist/
+.venv-local-korean-tts/
+*.wav
+*.mp3
+*.flac
+*.pyc
+__pycache__/
+.env
+

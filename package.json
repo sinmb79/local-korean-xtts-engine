@@ -1,0 +1,24 @@
+{
+  "name": "local-korean-xtts-engine",
+  "version": "0.1.0",
+  "private": false,
+  "type": "module",
+  "description": "A local Korean-first XTTS-v2 wrapper for one-take shorts narration.",
+  "license": "MIT",
+  "bin": {
+    "local-korean-xtts": "./dist/cli.js"
+  },
+  "scripts": {
+    "check": "tsc --noEmit",
+    "build": "tsc -p tsconfig.json",
+    "test": "vitest run",
+    "synth": "tsx src/cli.ts"
+  },
+  "devDependencies": {
+    "@types/node": "^24.6.0",
+    "tsx": "^4.20.6",
+    "typescript": "^5.9.3",
+    "vitest": "^2.1.9"
+  }
+}
+
