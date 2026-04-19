@@ -12,7 +12,9 @@ describe("local korean xtts cli", () => {
         "--output",
         "out.wav",
         "--reference",
-        "ref.wav",
+        "ref-a.wav",
+        "--reference",
+        "ref-b.wav",
         "--device",
         "cpu",
         "--speed",
@@ -24,7 +26,7 @@ describe("local korean xtts cli", () => {
     ).toEqual({
       textFile: "input.txt",
       output: "out.wav",
-      reference: "ref.wav",
+      referencePaths: ["ref-a.wav", "ref-b.wav"],
       device: "cpu",
       speed: 1.13,
       maxLineLength: 22,
@@ -47,7 +49,7 @@ describe("local korean xtts cli", () => {
     ).toEqual({
       textFile: "input.txt",
       output: "out.wav",
-      reference: "ref.wav",
+      referencePaths: ["ref.wav"],
       device: "cuda",
       speed: 1,
       maxLineLength: undefined,

@@ -78,6 +78,8 @@ npm run synth -- --text-file .\examples\sample-script.ko.txt --output .\out.wav 
 
 추가 옵션:
 
+- `--reference <wav>`를 여러 번 반복
+  같은 화자의 여러 reference를 함께 넣어 골드 스타일 팩처럼 묶어 사용할 수 있습니다.
 - `--speed 1.13`
   숏츠 기준 원래 레퍼런스의 말하기 속도를 direct synth 결과에도 그대로 반영합니다.
 - `--max-line-length 26`
@@ -92,6 +94,7 @@ npm run synth -- `
   --text-file .\examples\sample-script.ko.txt `
   --output .\out.wav `
   --reference C:\voices\boss-reference.wav `
+  --reference C:\voices\boss-shorts-gold.wav `
   --device cuda `
   --speed 1.13 `
   --max-line-length 24

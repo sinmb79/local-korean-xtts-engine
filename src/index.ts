@@ -41,7 +41,8 @@ const CLAUSE_BREAK_SUFFIXES = [
 export interface SynthesizeOptions {
   text: string;
   outputPath: string;
-  referencePath: string;
+  referencePath?: string;
+  referencePaths?: string[];
   pythonPath?: string;
   scriptPath?: string;
   language?: "ko" | "en";
@@ -139,7 +140,7 @@ export function buildSpeedAdjustFilter(speed = 1) {
 export function buildXttsArgs(input: {
   textFile: string;
   outputPath: string;
-  referencePath: string;
+  referencePaths: string[];
   scriptPath: string;
   language: "ko" | "en";
   device: "cuda" | "cpu";
@@ -152,13 +153,15 @@ export function buildXttsArgs(input: {
     input.textFile,
     "--output",
     input.outputPath,
-    "--reference",
-    input.referencePath,
     "--language",
     input.language,
     "--device",
     input.device,
   ];
+
+  for (const referencePath of input.referencePaths) {
+    args.push("--reference", referencePath);
+  }
 
   if (input.modelName.trim()) {
     args.push("--model-name", input.modelName.trim());
@@ -170,7 +173,10 @@ export function buildXttsArgs(input: {
 
 export async function synthesizeLocalKoreanXtts(options: SynthesizeOptions) {
   const outputPath = path.resolve(options.outputPath);
-  const referencePath = path.resolve(options.referencePath);
+  const referencePaths = [...new Set((options.referencePaths ?? (options.referencePath ? [options.referencePath] : []))
+    .map((value) => value.trim())
+    .filter(Boolean)
+    .map((value) => path.resolve(value)))];
   const pythonPath = await resolveFirstExistingPath(
     options.pythonPath ? [options.pythonPath] : getPythonCandidates(),
   );
@@ -186,7 +192,13 @@ export async function synthesizeLocalKoreanXtts(options: SynthesizeOptions) {
     throw new Error("Python XTTS wrapper not found.");
   }
 
-  await fs.access(referencePath);
+  if (referencePaths.length === 0) {
+    throw new Error("At least one reference path is required.");
+  }
+
+  for (const referencePath of referencePaths) {
+    await fs.access(referencePath);
+  }
 
   const tempDir = path.join(process.cwd(), ".tmp-local-korean-xtts");
   await fs.mkdir(tempDir, { recursive: true });
@@ -205,7 +217,7 @@ export async function synthesizeLocalKoreanXtts(options: SynthesizeOptions) {
       buildXttsArgs({
         textFile: textPath,
         outputPath,
-        referencePath,
+        referencePaths,
         scriptPath,
         language: options.language ?? "ko",
         device: options.device ?? "cuda",

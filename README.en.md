@@ -79,6 +79,8 @@ npm run synth -- --text-file .\examples\sample-script.ko.txt --output .\out.wav 
 
 Extra options:
 
+- Repeat `--reference <wav>`
+  Pass multiple references from the same speaker so you can build a gold-style bundle instead of relying on a single clip.
 - `--speed 1.13`
   Preserves the original reference pacing in the direct synth output.
 - `--max-line-length 26`

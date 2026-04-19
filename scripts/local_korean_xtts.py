@@ -13,7 +13,13 @@ def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Generate Korean narration with XTTS-v2.")
     parser.add_argument("--text-file", required=True, help="UTF-8 text file path.")
     parser.add_argument("--output", required=True, help="Output wav path.")
-    parser.add_argument("--reference", required=True, help="Reference speaker wav path.")
+    parser.add_argument(
+        "--reference",
+        dest="references",
+        action="append",
+        required=True,
+        help="Reference speaker wav path. Repeat this flag to pass multiple references.",
+    )
     parser.add_argument("--language", default="ko", help="Language code. Default: ko")
     parser.add_argument("--device", choices=("cuda", "cpu"), default="cuda")
     parser.add_argument("--model-name", default=DEFAULT_MODEL_NAME)
@@ -77,12 +83,13 @@ def main() -> int:
     os.environ.setdefault("TORCH_FORCE_NO_WEIGHTS_ONLY_LOAD", "1")
 
     text = read_text(args.text_file)
-    reference_path = Path(args.reference).expanduser().resolve()
+    reference_paths = [Path(value).expanduser().resolve() for value in args.references]
     output_path = Path(args.output).expanduser().resolve()
     output_path.parent.mkdir(parents=True, exist_ok=True)
 
-    if not reference_path.exists():
-        raise SystemExit(f"Reference wav was not found: {reference_path}")
+    for reference_path in reference_paths:
+        if not reference_path.exists():
+            raise SystemExit(f"Reference wav was not found: {reference_path}")
 
     try:
         from TTS.api import TTS  # type: ignore
@@ -95,7 +102,7 @@ def main() -> int:
     tts.tts_to_file(
         text=text,
         file_path=str(output_path),
-        speaker_wav=[str(reference_path)],
+        speaker_wav=[str(reference_path) for reference_path in reference_paths],
         language=args.language,
         split_sentences=args.split_sentences,
     )
