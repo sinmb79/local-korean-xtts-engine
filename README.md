@@ -76,6 +76,13 @@ npm install
 npm run synth -- --text-file .\examples\sample-script.ko.txt --output .\out.wav --reference C:\path\to\reference.wav
 ```
 
+추가 옵션:
+
+- `--max-line-length 26`
+  한국어 clause를 더 짧게 끊어 자막과 호흡용 줄바꿈을 더 보수적으로 잡습니다.
+- `--no-tail-cleanup`
+  말끝 tail cleanup을 끄고 raw XTTS 출력에 가깝게 확인할 때 사용합니다.
+
 ## CLI 예시
 
 ```powershell
@@ -83,7 +90,8 @@ npm run synth -- `
   --text-file .\examples\sample-script.ko.txt `
   --output .\out.wav `
   --reference C:\voices\boss-reference.wav `
-  --device cuda
+  --device cuda `
+  --max-line-length 24
 ```
 
 ## 설계 원칙
@@ -141,4 +149,3 @@ sequenceDiagram
 - 긴 한국어 문장을 더 안전하게 처리하는 clause chunker
 - F5-TTS backend adapter
 - ffmpeg 후처리 preset 내장
-

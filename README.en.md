@@ -77,6 +77,13 @@ npm install
 npm run synth -- --text-file .\examples\sample-script.ko.txt --output .\out.wav --reference C:\path\to\reference.wav
 ```
 
+Extra options:
+
+- `--max-line-length 26`
+  Makes Korean clause breaks more conservative for subtitle-friendly line lengths.
+- `--no-tail-cleanup`
+  Disables tail cleanup when you want to inspect a more raw XTTS output.
+
 ## Design notes
 
 - One speaker body narration should be generated as a single master track first.
@@ -87,4 +94,3 @@ npm run synth -- --text-file .\examples\sample-script.ko.txt --output .\out.wav 
 
 - Only use voices you are authorized to use.
 - Do not push private voice references into a public repository.
-
