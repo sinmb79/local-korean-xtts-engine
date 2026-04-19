@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  buildPostPresetFilter,
   buildSpeedAdjustFilter,
   buildTailCleanupFilter,
   buildSpeechReadyKoreanText,
@@ -30,6 +31,8 @@ describe("local korean xtts engine", () => {
         device: "cuda",
         splitSentences: false,
         modelName: "tts_models/multilingual/multi-dataset/xtts_v2",
+        targetPeak: 0.92,
+        targetRms: 0.12,
       }),
     ).toEqual([
       "scripts/local_korean_xtts.py",
@@ -47,6 +50,10 @@ describe("local korean xtts engine", () => {
       "reference-b.wav",
       "--model-name",
       "tts_models/multilingual/multi-dataset/xtts_v2",
+      "--target-peak",
+      "0.92",
+      "--target-rms",
+      "0.12",
       "--no-split-sentences",
     ]);
   });
@@ -80,5 +87,10 @@ describe("local korean xtts engine", () => {
   it("builds a speed-adjust filter for shorts narration pacing", () => {
     expect(buildSpeedAdjustFilter(1.13)).toBe("atempo=1.13");
     expect(buildSpeedAdjustFilter(1)).toBe("");
+  });
+
+  it("builds the issue shorts dad post preset filter", () => {
+    expect(buildPostPresetFilter("issue-shorts-dad")).toContain("afftdn=nr=30");
+    expect(buildPostPresetFilter("none")).toBe("");
   });
 });

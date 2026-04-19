@@ -84,6 +84,10 @@ npm run synth -- --text-file .\examples\sample-script.ko.txt --output .\out.wav 
   숏츠 기준 원래 레퍼런스의 말하기 속도를 direct synth 결과에도 그대로 반영합니다.
 - `--max-line-length 26`
   한국어 clause를 더 짧게 끊어 자막과 호흡용 줄바꿈을 더 보수적으로 잡습니다.
+- `--target-peak 0.92 --target-rms 0.12`
+  기존 Chatter 기준선과 비슷하게 reference WAV 레벨을 정규화해서 음색 드리프트를 줄입니다.
+- `--post-preset issue-shorts-dad`
+  Issue Shorts Studio에서 쓰는 아빠 shorts contour를 후처리로 바로 적용합니다.
 - `--no-tail-cleanup`
   말끝 tail cleanup을 끄고 raw XTTS 출력에 가깝게 확인할 때 사용합니다.
 
@@ -97,7 +101,10 @@ npm run synth -- `
   --reference C:\voices\boss-shorts-gold.wav `
   --device cuda `
   --speed 1.13 `
-  --max-line-length 24
+  --max-line-length 24 `
+  --target-peak 0.92 `
+  --target-rms 0.12 `
+  --post-preset issue-shorts-dad
 ```
 
 ## 설계 원칙

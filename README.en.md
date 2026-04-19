@@ -85,8 +85,28 @@ Extra options:
   Preserves the original reference pacing in the direct synth output.
 - `--max-line-length 26`
   Makes Korean clause breaks more conservative for subtitle-friendly line lengths.
+- `--target-peak 0.92 --target-rms 0.12`
+  Normalizes reference WAV loudness toward the Chatter baseline before XTTS reads it.
+- `--post-preset issue-shorts-dad`
+  Applies the dad shorts contour used in Issue Shorts Studio as an extra post-process step.
 - `--no-tail-cleanup`
   Disables tail cleanup when you want to inspect a more raw XTTS output.
+
+## CLI example
+
+```powershell
+npm run synth -- `
+  --text-file .\examples\sample-script.ko.txt `
+  --output .\out.wav `
+  --reference C:\voices\boss-reference.wav `
+  --reference C:\voices\boss-shorts-gold.wav `
+  --device cuda `
+  --speed 1.13 `
+  --max-line-length 24 `
+  --target-peak 0.92 `
+  --target-rms 0.12 `
+  --post-preset issue-shorts-dad
+```
 
 ## Design notes
 

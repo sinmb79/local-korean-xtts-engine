@@ -33,6 +33,11 @@ export function parseCliArgs(argv: string[]) {
     const speed = speedRaw ? Number.parseFloat(speedRaw) : 1;
     const maxLineLengthRaw = getArg("--max-line-length");
     const maxLineLength = maxLineLengthRaw ? Number.parseInt(maxLineLengthRaw, 10) : undefined;
+    const targetPeakRaw = getArg("--target-peak");
+    const targetPeak = targetPeakRaw ? Number.parseFloat(targetPeakRaw) : undefined;
+    const targetRmsRaw = getArg("--target-rms");
+    const targetRms = targetRmsRaw ? Number.parseFloat(targetRmsRaw) : undefined;
+    const postPreset = (getArg("--post-preset") || "none") as "issue-shorts-dad" | "none";
     const cleanupTail = !argv.includes("--no-tail-cleanup");
 
     return {
@@ -42,6 +47,9 @@ export function parseCliArgs(argv: string[]) {
       device,
       speed: Number.isFinite(speed) ? speed : 1,
       maxLineLength: Number.isFinite(maxLineLength) ? maxLineLength : undefined,
+      targetPeak: Number.isFinite(targetPeak) ? targetPeak : undefined,
+      targetRms: Number.isFinite(targetRms) ? targetRms : undefined,
+      postPreset,
       cleanupTail,
     };
   } finally {
@@ -50,11 +58,11 @@ export function parseCliArgs(argv: string[]) {
 }
 
 async function main() {
-  const { textFile, output, referencePaths, device, speed, maxLineLength, cleanupTail } = parseCliArgs(process.argv);
+  const { textFile, output, referencePaths, device, speed, maxLineLength, targetPeak, targetRms, postPreset, cleanupTail } = parseCliArgs(process.argv);
 
   if (!textFile || !output || referencePaths.length === 0) {
     throw new Error(
-      "Usage: npm run synth -- --text-file <path> --output <wav> --reference <wav> [--reference <wav> ...] [--device cuda|cpu] [--speed 1.13] [--max-line-length 26] [--no-tail-cleanup]",
+      "Usage: npm run synth -- --text-file <path> --output <wav> --reference <wav> [--reference <wav> ...] [--device cuda|cpu] [--speed 1.13] [--max-line-length 26] [--target-peak 0.92] [--target-rms 0.12] [--post-preset issue-shorts-dad] [--no-tail-cleanup]",
     );
   }
 
@@ -66,6 +74,9 @@ async function main() {
     device,
     speed,
     maxLineLength,
+    targetPeak,
+    targetRms,
+    postPreset,
     cleanupTail,
   });
 

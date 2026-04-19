@@ -21,6 +21,12 @@ describe("local korean xtts cli", () => {
         "1.13",
         "--max-line-length",
         "22",
+        "--target-peak",
+        "0.92",
+        "--target-rms",
+        "0.12",
+        "--post-preset",
+        "issue-shorts-dad",
         "--no-tail-cleanup",
       ]),
     ).toEqual({
@@ -30,6 +36,9 @@ describe("local korean xtts cli", () => {
       device: "cpu",
       speed: 1.13,
       maxLineLength: 22,
+      targetPeak: 0.92,
+      targetRms: 0.12,
+      postPreset: "issue-shorts-dad",
       cleanupTail: false,
     });
   });
@@ -53,6 +62,9 @@ describe("local korean xtts cli", () => {
       device: "cuda",
       speed: 1,
       maxLineLength: undefined,
+      targetPeak: undefined,
+      targetRms: undefined,
+      postPreset: "none",
       cleanupTail: true,
     });
   });

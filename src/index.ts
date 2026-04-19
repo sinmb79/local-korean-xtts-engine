@@ -7,6 +7,7 @@ const execFileAsync = promisify(execFile);
 const DEFAULT_SCRIPT = "scripts/local_korean_xtts.py";
 const DEFAULT_MODEL = "tts_models/multilingual/multi-dataset/xtts_v2";
 const DEFAULT_MAX_LINE_LENGTH = 26;
+export type AudioPostPreset = "issue-shorts-dad" | "none";
 const CLAUSE_BREAK_SUFFIXES = [
   ",",
   "\uADF8\uB9AC\uACE0",
@@ -52,6 +53,9 @@ export interface SynthesizeOptions {
   cleanupTail?: boolean;
   maxLineLength?: number;
   speed?: number;
+  targetPeak?: number;
+  targetRms?: number;
+  postPreset?: AudioPostPreset;
 }
 
 export function normalizeKoreanOneTakeText(text: string) {
@@ -137,6 +141,14 @@ export function buildSpeedAdjustFilter(speed = 1) {
   return `atempo=${normalized.toFixed(2)}`;
 }
 
+export function buildPostPresetFilter(postPreset: AudioPostPreset = "none") {
+  if (postPreset === "issue-shorts-dad") {
+    return "afftdn=nr=30:nf=-25:tn=1,highpass=f=125,lowpass=f=6000,equalizer=f=2000:t=q:w=1.1:g=2.0,equalizer=f=3600:t=q:w=1.0:g=1.7,equalizer=f=4700:t=q:w=0.9:g=1.3,acompressor=threshold=-20dB:ratio=2.5:attack=5:release=80:makeup=1.7,alimiter=limit=0.90,afade=t=in:st=0:d=0.03,areverse,afade=t=in:st=0:d=0.06,areverse,volume=1.05";
+  }
+
+  return "";
+}
+
 export function buildXttsArgs(input: {
   textFile: string;
   outputPath: string;
@@ -146,6 +158,8 @@ export function buildXttsArgs(input: {
   device: "cuda" | "cpu";
   splitSentences: boolean;
   modelName: string;
+  targetPeak?: number;
+  targetRms?: number;
 }) {
   const args = [
     input.scriptPath,
@@ -165,6 +179,14 @@ export function buildXttsArgs(input: {
 
   if (input.modelName.trim()) {
     args.push("--model-name", input.modelName.trim());
+  }
+
+  if (typeof input.targetPeak === "number" && Number.isFinite(input.targetPeak)) {
+    args.push("--target-peak", input.targetPeak.toString());
+  }
+
+  if (typeof input.targetRms === "number" && Number.isFinite(input.targetRms)) {
+    args.push("--target-rms", input.targetRms.toString());
   }
 
   args.push(input.splitSentences ? "--split-sentences" : "--no-split-sentences");
@@ -223,6 +245,8 @@ export async function synthesizeLocalKoreanXtts(options: SynthesizeOptions) {
         device: options.device ?? "cuda",
         splitSentences: options.splitSentences ?? false,
         modelName: options.modelName ?? DEFAULT_MODEL,
+        targetPeak: options.targetPeak,
+        targetRms: options.targetRms,
       }),
       {
         env: {
@@ -238,8 +262,17 @@ export async function synthesizeLocalKoreanXtts(options: SynthesizeOptions) {
     await fs.rm(tempDir, { recursive: true, force: true });
   }
 
-  if (options.cleanupTail !== false || Math.abs((options.speed ?? 1) - 1) >= 0.005) {
-    await postProcessGeneratedAudio(outputPath, options.speed ?? 1, options.cleanupTail !== false);
+  if (
+    options.cleanupTail !== false ||
+    Math.abs((options.speed ?? 1) - 1) >= 0.005 ||
+    buildPostPresetFilter(options.postPreset ?? "none")
+  ) {
+    await postProcessGeneratedAudio(
+      outputPath,
+      options.speed ?? 1,
+      options.cleanupTail !== false,
+      options.postPreset ?? "none",
+    );
   }
 
   return outputPath;
@@ -271,7 +304,12 @@ function findPreferredSplitIndex(tokens: string[], maxIndex: number) {
   return -1;
 }
 
-async function postProcessGeneratedAudio(audioPath: string, speed: number, cleanupTail: boolean) {
+async function postProcessGeneratedAudio(
+  audioPath: string,
+  speed: number,
+  cleanupTail: boolean,
+  postPreset: AudioPostPreset,
+) {
   const durationSeconds = await probeDurationSeconds(audioPath);
   if (!durationSeconds || durationSeconds <= 0.2) {
     return;
@@ -280,7 +318,8 @@ async function postProcessGeneratedAudio(audioPath: string, speed: number, clean
   const normalizedSpeed = Number(Math.max(0.88, Math.min(1.2, speed)).toFixed(2));
   const speedFilter = buildSpeedAdjustFilter(normalizedSpeed);
   const adjustedDuration = speedFilter ? durationSeconds / normalizedSpeed : durationSeconds;
-  const filters = [speedFilter, cleanupTail ? buildTailCleanupFilter(adjustedDuration) : ""].filter(Boolean);
+  const presetFilter = buildPostPresetFilter(postPreset);
+  const filters = [speedFilter, presetFilter, cleanupTail ? buildTailCleanupFilter(adjustedDuration) : ""].filter(Boolean);
   if (filters.length === 0) {
     return;
   }
