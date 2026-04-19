@@ -78,6 +78,8 @@ npm run synth -- --text-file .\examples\sample-script.ko.txt --output .\out.wav 
 
 추가 옵션:
 
+- `--speed 1.13`
+  숏츠 기준 원래 레퍼런스의 말하기 속도를 direct synth 결과에도 그대로 반영합니다.
 - `--max-line-length 26`
   한국어 clause를 더 짧게 끊어 자막과 호흡용 줄바꿈을 더 보수적으로 잡습니다.
 - `--no-tail-cleanup`
@@ -91,6 +93,7 @@ npm run synth -- `
   --output .\out.wav `
   --reference C:\voices\boss-reference.wav `
   --device cuda `
+  --speed 1.13 `
   --max-line-length 24
 ```
 

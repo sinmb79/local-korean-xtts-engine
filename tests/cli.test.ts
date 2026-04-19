@@ -15,6 +15,8 @@ describe("local korean xtts cli", () => {
         "ref.wav",
         "--device",
         "cpu",
+        "--speed",
+        "1.13",
         "--max-line-length",
         "22",
         "--no-tail-cleanup",
@@ -24,6 +26,7 @@ describe("local korean xtts cli", () => {
       output: "out.wav",
       reference: "ref.wav",
       device: "cpu",
+      speed: 1.13,
       maxLineLength: 22,
       cleanupTail: false,
     });
@@ -46,6 +49,7 @@ describe("local korean xtts cli", () => {
       output: "out.wav",
       reference: "ref.wav",
       device: "cuda",
+      speed: 1,
       maxLineLength: undefined,
       cleanupTail: true,
     });

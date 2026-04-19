@@ -50,6 +50,7 @@ export interface SynthesizeOptions {
   modelName?: string;
   cleanupTail?: boolean;
   maxLineLength?: number;
+  speed?: number;
 }
 
 export function normalizeKoreanOneTakeText(text: string) {
@@ -124,6 +125,15 @@ export function buildSpeechReadyKoreanText(
 export function buildTailCleanupFilter(durationSeconds: number, fadeDurationSeconds = 0.12) {
   const fadeStart = Math.max(0, Number((durationSeconds - fadeDurationSeconds).toFixed(2)));
   return `areverse,silenceremove=start_periods=1:start_duration=0.08:start_threshold=-38dB,areverse,afade=t=out:st=${fadeStart.toFixed(2)}:d=${fadeDurationSeconds.toFixed(2)}`;
+}
+
+export function buildSpeedAdjustFilter(speed = 1) {
+  const normalized = Number(Math.max(0.88, Math.min(1.2, speed)).toFixed(2));
+  if (Math.abs(normalized - 1) < 0.005) {
+    return "";
+  }
+
+  return `atempo=${normalized.toFixed(2)}`;
 }
 
 export function buildXttsArgs(input: {
@@ -216,8 +226,8 @@ export async function synthesizeLocalKoreanXtts(options: SynthesizeOptions) {
     await fs.rm(tempDir, { recursive: true, force: true });
   }
 
-  if (options.cleanupTail !== false) {
-    await cleanupTailArtifacts(outputPath);
+  if (options.cleanupTail !== false || Math.abs((options.speed ?? 1) - 1) >= 0.005) {
+    await postProcessGeneratedAudio(outputPath, options.speed ?? 1, options.cleanupTail !== false);
   }
 
   return outputPath;
@@ -249,9 +259,17 @@ function findPreferredSplitIndex(tokens: string[], maxIndex: number) {
   return -1;
 }
 
-async function cleanupTailArtifacts(audioPath: string) {
+async function postProcessGeneratedAudio(audioPath: string, speed: number, cleanupTail: boolean) {
   const durationSeconds = await probeDurationSeconds(audioPath);
   if (!durationSeconds || durationSeconds <= 0.2) {
+    return;
+  }
+
+  const normalizedSpeed = Number(Math.max(0.88, Math.min(1.2, speed)).toFixed(2));
+  const speedFilter = buildSpeedAdjustFilter(normalizedSpeed);
+  const adjustedDuration = speedFilter ? durationSeconds / normalizedSpeed : durationSeconds;
+  const filters = [speedFilter, cleanupTail ? buildTailCleanupFilter(adjustedDuration) : ""].filter(Boolean);
+  if (filters.length === 0) {
     return;
   }
 
@@ -270,7 +288,7 @@ async function cleanupTailArtifacts(audioPath: string) {
         "-i",
         audioPath,
         "-af",
-        buildTailCleanupFilter(durationSeconds),
+        filters.join(","),
         "-c:a",
         "pcm_s16le",
         cleanedPath,

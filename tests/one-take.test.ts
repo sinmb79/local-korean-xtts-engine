@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  buildSpeedAdjustFilter,
   buildTailCleanupFilter,
   buildSpeechReadyKoreanText,
   buildXttsArgs,
@@ -72,5 +73,10 @@ describe("local korean xtts engine", () => {
     expect(buildTailCleanupFilter(12.4)).toBe(
       "areverse,silenceremove=start_periods=1:start_duration=0.08:start_threshold=-38dB,areverse,afade=t=out:st=12.28:d=0.12",
     );
+  });
+
+  it("builds a speed-adjust filter for shorts narration pacing", () => {
+    expect(buildSpeedAdjustFilter(1.13)).toBe("atempo=1.13");
+    expect(buildSpeedAdjustFilter(1)).toBe("");
   });
 });

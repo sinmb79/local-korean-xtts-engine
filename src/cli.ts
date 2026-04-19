@@ -18,6 +18,8 @@ export function parseCliArgs(argv: string[]) {
     const output = getArg("--output");
     const reference = getArg("--reference");
     const device = (getArg("--device") || "cuda") as "cuda" | "cpu";
+    const speedRaw = getArg("--speed");
+    const speed = speedRaw ? Number.parseFloat(speedRaw) : 1;
     const maxLineLengthRaw = getArg("--max-line-length");
     const maxLineLength = maxLineLengthRaw ? Number.parseInt(maxLineLengthRaw, 10) : undefined;
     const cleanupTail = !argv.includes("--no-tail-cleanup");
@@ -27,6 +29,7 @@ export function parseCliArgs(argv: string[]) {
       output,
       reference,
       device,
+      speed: Number.isFinite(speed) ? speed : 1,
       maxLineLength: Number.isFinite(maxLineLength) ? maxLineLength : undefined,
       cleanupTail,
     };
@@ -36,11 +39,11 @@ export function parseCliArgs(argv: string[]) {
 }
 
 async function main() {
-  const { textFile, output, reference, device, maxLineLength, cleanupTail } = parseCliArgs(process.argv);
+  const { textFile, output, reference, device, speed, maxLineLength, cleanupTail } = parseCliArgs(process.argv);
 
   if (!textFile || !output || !reference) {
     throw new Error(
-      "Usage: npm run synth -- --text-file <path> --output <wav> --reference <wav> [--device cuda|cpu] [--max-line-length 26] [--no-tail-cleanup]",
+      "Usage: npm run synth -- --text-file <path> --output <wav> --reference <wav> [--device cuda|cpu] [--speed 1.13] [--max-line-length 26] [--no-tail-cleanup]",
     );
   }
 
@@ -50,6 +53,7 @@ async function main() {
     outputPath: output,
     referencePath: reference,
     device,
+    speed,
     maxLineLength,
     cleanupTail,
   });
